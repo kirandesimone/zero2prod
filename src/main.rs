@@ -1,4 +1,8 @@
 fn main() {
     println!("Hello, world!");
-    println!("hello");
+    test_actions("Kiran".to_string());
+}
+
+fn test_actions(h: String) {
+    println!("hello {}", h);
 }
