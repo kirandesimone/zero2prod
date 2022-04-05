@@ -1,8 +1,8 @@
-fn main() {
-    println!("Hello, world!");
-    test_actions("Kiran".to_string());
-}
+use zero2prod::run;
 
-fn test_actions(h: String) {
-    println!("hello {}", h);
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    //Bubble up the error if we failed to bind the address
+    // otherwise call await on our server
+    run()?.await
 }
