@@ -36,7 +36,8 @@ async fn subscriber_returns_a_200_for_valid_form_data() {
     let client = reqwest::Client::new();
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
-    let response = client.post(&format!("{}/subscriptions", &address))
+    let response = client
+        .post(&format!("{}/subscriptions", &address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
@@ -53,11 +54,12 @@ async fn subscriber_returns_a_400_for_invalid_form_data() {
     let test_cases = vec![
         ("name=le%20guin", "No email provided"),
         ("email=ursula_le_guin%40gmail.com", "No name provided"),
-        ("", "No data provided")
+        ("", "No data provided"),
     ];
 
     for (invalid_data, error) in test_cases {
-        let response = client.post(&format!("{}/subscriptions", &address))
+        let response = client
+            .post(&format!("{}/subscriptions", &address))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(invalid_data)
             .send()
@@ -67,7 +69,8 @@ async fn subscriber_returns_a_400_for_invalid_form_data() {
         assert_eq!(
             400,
             response.status().as_u16(),
-            "The API did not fail with 400 Bad Request when the payload was {}", error
+            "The API did not fail with 400 Bad Request when the payload was {}",
+            error
         );
     }
 }

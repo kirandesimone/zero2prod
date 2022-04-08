@@ -1,8 +1,7 @@
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use std::net::TcpListener;
 use serde::Deserialize;
-
+use std::net::TcpListener;
 
 // Handler for Get reqs
 async fn greet(req: HttpRequest) -> impl Responder {
@@ -17,10 +16,10 @@ async fn health_check() -> impl Responder {
 #[derive(Deserialize)]
 struct FormData {
     name: String,
-    email: String
+    email: String,
 }
 
-async fn subscribe(form: web::Form<FormData>) -> impl Responder {
+async fn subscribe(_form: web::Form<FormData>) -> impl Responder {
     HttpResponse::Ok()
 }
 
