@@ -2,7 +2,9 @@
 // INTEGRATION TEST FOR APIS //
 //////////////////////////////
 
+use sqlx::{Connection, PgConnection};
 use std::net::TcpListener;
+use zero2prod::config;
 use zero2prod::startup;
 
 fn spawn_app() -> String {
@@ -34,6 +36,11 @@ async fn health_check_works() {
 #[tokio::test]
 async fn subscriber_returns_a_200_for_valid_form_data() {
     let address = spawn_app();
+    let configuration = config::get_configuration().expect("failed to load config file");
+    let connection_string = configuration.database.connection_string();
+    let mut connection = PgConnection::connect(&connection_string)
+        .await
+        .expect("Failed to connect to Postgres");
     let client = reqwest::Client::new();
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
@@ -46,6 +53,14 @@ async fn subscriber_returns_a_200_for_valid_form_data() {
         .expect("Failed to execute request");
 
     assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!("select email, name from subscriptions",)
+        .fetch_one(&mut connection)
+        .await
+        .expect("Failed to fetch saved subscription");
+
+    assert_eq!(saved.name, "le guin");
+    assert_eq!(saved.email, "ursula_le_guin@gmail.com");
 }
 
 #[tokio::test]
