@@ -10,7 +10,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
     let connection = web::Data::new(connection_pool);
     let server = HttpServer::new(move || {
         App::new()
-            .app_data(connection.clone())// register the db connection as part of app state
+            .app_data(connection.clone()) // register the db connection as part of app state
             .wrap(Logger::default())
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))

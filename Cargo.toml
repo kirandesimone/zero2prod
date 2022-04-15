@@ -19,9 +19,10 @@ sqlx = {version = "0.5.11", features = ["runtime-actix-native-tls", "postgres", 
 config = "0.13.0"
 uuid = {version="0.8.2", features=["v4"]}
 chrono = "0.4.19"
-env_logger = "0.9.0"
-log = "0.4.16"
 tracing = {version="0.1.33", features=["log"]}
+tracing-subscriber = {version="0.3.11", features=["registry", "env-filter"]}
+tracing-bunyan-formatter = "0.3.2"
+tracing-log = "0.1.2"
 
 [dev-dependencies]
 #dev-dependencies are for running tests or examples

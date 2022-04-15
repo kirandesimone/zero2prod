@@ -2,12 +2,14 @@ use sqlx::PgPool;
 use std::net::TcpListener;
 use zero2prod::config;
 use zero2prod::startup;
-use env_logger::Env;
+use zero2prod::telemetry;
+
+
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // this will set up the logger for everything info level or above
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into());
+    telemetry::init_subscriber(subscriber);
     //Bubble up the error if we failed to bind the address
     // otherwise call await on our server
     let configuration = config::get_configuration().expect("Could not read configuration file");
