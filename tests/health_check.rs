@@ -2,12 +2,28 @@
 // INTEGRATION TEST FOR APIS //
 //////////////////////////////
 
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
+use std::io::{sink, stdout};
 use std::net::TcpListener;
 use uuid::Uuid;
-use zero2prod::config;
-use zero2prod::config::DatabaseSettings;
-use zero2prod::startup;
+use zero2prod::config::{get_configuration, DatabaseSettings};
+use zero2prod::telemetry::*;
+use zero2prod::{startup, telemetry};
+use secrecy::ExposeSecret;
+
+// ensures that the 'tracing' stack is initialised once
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let default_filter_level = "info".to_string();
+    let env_filter = "test".to_string();
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = telemetry::get_subscriber(subscriber_name, env_filter, stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = telemetry::get_subscriber(subscriber_name, env_filter, sink);
+        init_subscriber(subscriber);
+    };
+});
 
 pub struct TestApp {
     pub address: String,
@@ -15,12 +31,13 @@ pub struct TestApp {
 }
 
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     //binding to port 0 will tell the OS to bind to a random port
     let listener = TcpListener::bind("127.0.0.1:0").expect("Could not bin to port");
-    let mut configuration = config::get_configuration().expect("could not load config");
+    let port = listener.local_addr().unwrap().port();
+    let mut configuration = get_configuration().expect("could not load config");
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
-    let port = listener.local_addr().unwrap().port();
     let server = startup::run(listener, connection_pool.clone()).expect("Failed to bind address");
     let _ = tokio::spawn(server);
     TestApp {
@@ -32,7 +49,7 @@ async fn spawn_app() -> TestApp {
 // for creating brand-new logical database for each integration test
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     // create Database
-    let mut connection = PgConnection::connect(&config.connection_string_without_db_name())
+    let mut connection = PgConnection::connect(&config.connection_string_without_db_name().expose_secret())
         .await
         .expect("Failed to connect to DB with no name");
     connection
@@ -41,7 +58,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .expect("Failed to create database.");
 
     // migrate the database
-    let connection_pool = PgPool::connect(&config.connection_string())
+    let connection_pool = PgPool::connect(&config.connection_string().expose_secret())
         .await
         .expect("Couldn't connect to the db");
     sqlx::migrate!("./migrations")
