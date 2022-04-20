@@ -26,12 +26,10 @@ pub async fn subscribe(
         Ok(_) => HttpResponse::Ok(),
         Err(_) => HttpResponse::InternalServerError(),
     }
+    .await
 }
 
-#[tracing::instrument(
-    name="Saving a new Subscriber",
-    skip(form, connection_pool)
-)]
+#[tracing::instrument(name = "Saving a new Subscriber", skip(form, connection_pool))]
 pub async fn insert_subscriber(
     form: &FormData,
     connection_pool: &PgPool,

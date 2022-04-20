@@ -3,6 +3,7 @@
 //////////////////////////////
 
 use once_cell::sync::Lazy;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::io::{sink, stdout};
 use std::net::TcpListener;
@@ -10,7 +11,6 @@ use uuid::Uuid;
 use zero2prod::config::{get_configuration, DatabaseSettings};
 use zero2prod::telemetry::*;
 use zero2prod::{startup, telemetry};
-use secrecy::ExposeSecret;
 
 // ensures that the 'tracing' stack is initialised once
 static TRACING: Lazy<()> = Lazy::new(|| {
@@ -49,9 +49,10 @@ async fn spawn_app() -> TestApp {
 // for creating brand-new logical database for each integration test
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
     // create Database
-    let mut connection = PgConnection::connect(&config.connection_string_without_db_name().expose_secret())
-        .await
-        .expect("Failed to connect to DB with no name");
+    let mut connection =
+        PgConnection::connect(&config.connection_string_without_db_name().expose_secret())
+            .await
+            .expect("Failed to connect to DB with no name");
     connection
         .execute(format!(r#"create database "{}";"#, config.database_name).as_str())
         .await
