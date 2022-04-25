@@ -16,6 +16,7 @@ use zero2prod::{startup, telemetry};
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
     let env_filter = "test".to_string();
+    let subscriber_name = "ZERO2PROD_TEST".to_string();
     if std::env::var("TEST_LOG").is_ok() {
         let subscriber = telemetry::get_subscriber(subscriber_name, env_filter, stdout);
         init_subscriber(subscriber);
@@ -47,19 +48,19 @@ async fn spawn_app() -> TestApp {
 }
 
 // for creating brand-new logical database for each integration test
-pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
+pub async fn configure_database(db_config: &DatabaseSettings) -> PgPool {
     // create Database
     let mut connection =
-        PgConnection::connect(&config.connection_string_without_db_name().expose_secret())
+        PgConnection::connect_with(&db_config.connection_without_db())
             .await
             .expect("Failed to connect to DB with no name");
     connection
-        .execute(format!(r#"create database "{}";"#, config.database_name).as_str())
+        .execute(format!(r#"create database "{}";"#, db_config.database_name).as_str())
         .await
         .expect("Failed to create database.");
 
     // migrate the database
-    let connection_pool = PgPool::connect(&config.connection_string().expose_secret())
+    let connection_pool = PgPool::connect_with(db_config.connection_with_db())
         .await
         .expect("Couldn't connect to the db");
     sqlx::migrate!("./migrations")
