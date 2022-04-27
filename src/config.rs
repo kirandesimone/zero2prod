@@ -62,9 +62,9 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .expect("could not parse APP ENVIRONMENT");
 
     let settings = Config::builder()
-        .add_source(config::File::from(configuration_path.join("base")).required(true))
+        .add_source(config::File::from(configuration_path.join("base")))
         .add_source(
-            config::File::from(configuration_path.join(environment.as_str())).required(true),
+            config::File::from(configuration_path.join(environment.as_str())).required(false),
         )
         .add_source(config::Environment::with_prefix("app").separator("__"))
         .build()?;
