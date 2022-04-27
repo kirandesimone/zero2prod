@@ -50,10 +50,9 @@ async fn spawn_app() -> TestApp {
 // for creating brand-new logical database for each integration test
 pub async fn configure_database(db_config: &DatabaseSettings) -> PgPool {
     // create Database
-    let mut connection =
-        PgConnection::connect_with(&db_config.connection_without_db())
-            .await
-            .expect("Failed to connect to DB with no name");
+    let mut connection = PgConnection::connect_with(&db_config.connection_without_db())
+        .await
+        .expect("Failed to connect to DB with no name");
     connection
         .execute(format!(r#"create database "{}";"#, db_config.database_name).as_str())
         .await

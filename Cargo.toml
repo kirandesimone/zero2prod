@@ -16,7 +16,7 @@ tokio = {version = "1.17.0", features = ["macros", "rt-multi-thread"]}
 reqwest = "0.11.10"
 serde = {version = "1.0.136", features = ["derive"]}
 sqlx = {version = "0.5.11", features = ["runtime-actix-native-tls", "postgres", "macros", "chrono", "uuid", "offline"]}
-config = {version="0.13.0", default-fetures="false", features=["yaml"]}
+config = { version = "0.11", default-features = false, features = ["yaml"] }
 uuid = {version="0.8.2", features=["v4"]}
 chrono = "0.4.19"
 tracing = {version="0.1.33", features=["log"]}
