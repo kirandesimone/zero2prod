@@ -1,12 +1,12 @@
 ////////////////////////////////
 // INTEGRATION TEST FOR APIS //
 //////////////////////////////
-
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::io::{sink, stdout};
 use std::net::TcpListener;
+use tracing_subscriber::fmt::format;
 use uuid::Uuid;
 use zero2prod::config::{get_configuration, DatabaseSettings};
 use zero2prod::telemetry::*;
@@ -135,6 +135,35 @@ async fn subscriber_returns_a_400_for_invalid_form_data() {
             response.status().as_u16(),
             "The API did not fail with 400 Bad Request when the payload was {}",
             error
+        );
+    }
+}
+
+#[tokio::test]
+async fn subscribe_returns_400_when_fields_are_present_but_invalid() {
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+    let test_cases = vec![
+        ("name=Rachel&email=", "empty email"),
+        ("name=&email=bob%40gmail.com", "empty name"),
+        ("name=&email=", "empty name and email"),
+        ("name=Tim&email=this-is-not-an-email", "invalid email"),
+    ];
+
+    for (body, description) in test_cases {
+        let response = client
+            .post(&format!("{}/subscriptions", app.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("failed to execute query");
+
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "The API did not return a 400 BAD REQUEST when the payload was {}",
+            description
         );
     }
 }
