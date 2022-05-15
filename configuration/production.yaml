@@ -2,3 +2,7 @@ application:
   host: 0.0.0.0
 database:
   require_ssl: true
+email_client:
+  base_url: "https://api.sendgrid.com/v3/mail/send"
+  sg_key: "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"
+  sender_email: "kirandesimone@gmail.com"

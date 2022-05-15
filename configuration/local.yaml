@@ -2,3 +2,6 @@ application:
   host: 127.0.0.1
 database:
   require_ssl: false
+email_client:
+  sg_key: "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"
+  sender_email: "kirandesimone@gmail.com"
