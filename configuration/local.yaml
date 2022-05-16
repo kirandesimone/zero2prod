@@ -3,5 +3,5 @@ application:
 database:
   require_ssl: false
 email_client:
-  sg_key: "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"
+  sg_key: ""
   sender_email: "kirandesimone@gmail.com"
